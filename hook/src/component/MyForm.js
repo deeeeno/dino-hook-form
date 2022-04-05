@@ -1,14 +1,20 @@
 import {useForm} from '../hook/dino-hook-form'
 function MyForm(){
-    const {register,handleSubmit,formState} = useForm();
-    console.log(formState);
+    const {register,handleSubmit,formState} = useForm({mode:"onBlur"});
     const onSubmit = (data)=>{
         console.log(data);
     }
+    console.log(formState);
     return <>
         <form onSubmit={handleSubmit(onSubmit)}>
-            A : <input {...register("a",{required:'need data'})}/><br></br>
+            <div>
+            A : <input {...register("a",{required:'need data',pattern:{value:/A$/,message:'need to end A'}})}/><br></br>
+            <div>{formState.errors.a?.type} : {formState.errors.a?.message}</div>
+            </div>
+            <div>
             B : <input {...register("b",{min:{value:3,message:'more than 3'},max:{value:11,message:'less than 11'}})}/><br></br>
+            <div>{formState.errors.b?.type} : {formState.errors.b?.message}</div>
+            </div>
             <button type="submit">SEND</button>
         </form>
     </>

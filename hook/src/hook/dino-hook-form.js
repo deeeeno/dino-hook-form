@@ -4,7 +4,7 @@ import {useEffect, useState, useRef} from 'react';
 
 export function useForm(option={mode:'onSubmit'}){
     const nameList = []
-    const [formState, setFormState] = useState({error:{}})
+    const [formState, setFormState] = useState({errors:{}})
     const validationDict = new Map();
 
     const {mode} = option;
@@ -14,49 +14,78 @@ export function useForm(option={mode:'onSubmit'}){
         const {required} = validationOptions;
         if(required!==false){
             if(inputValue.length===0){
-                setFormState({error:{[name]:{type:'required',message:required}}});
+                setFormState(({errors})=>{
+                    const new_error = {...errors,[name]:{type:'required',message:required}};
+                    return {errors:new_error};
+                });
                 return false;
             }
         }
         //validation 내용은 {value, message}라는 전재로
         for(const [validation,option] of Object.entries(validationOptions)){
             const {value,message} = option;
-            const error = {[name]:{type:validation, message}};
+            const errorObj = {type:validation, message};
             switch(validation){
                 case 'min':
                     if(value > Number(inputValue)){
-                        setFormState({error});
+                        setFormState(({errors})=>{
+                            return {errors:{...errors,[name]:errorObj}};
+                        });
                         return false;
                     }else
-                        setFormState({});
+                        setFormState(({errors})=>{
+                            delete errors[name]
+                            return {errors};
+                        });
                     break;
                 case 'max':
                     if(value < Number(inputValue)){
-                        setFormState({error});
+                        setFormState(({errors})=>{
+                            return {errors:{...errors,[name]:errorObj}};
+                        });
                         return false;
                     }else
-                        setFormState({});
+                        setFormState(({errors})=>{
+                            delete errors[name]
+                            return {errors};
+                        });
                     break;
                 case 'minLength':
                     if(value > inputValue.length){
-                        setFormState({error});
+                        setFormState(({errors})=>{
+                            return {errors:{...errors,[name]:errorObj}};
+                        });
                         return false;
                     }else
-                        setFormState({});
+                        setFormState(({errors})=>{
+                            delete errors[name]
+                            return {errors};
+                        });
                     break;
                 case 'maxLength':
                     if(value < inputValue.length){
-                        setFormState({error});
+                        setFormState(({errors})=>{
+                            return {errors:{...errors,[name]:errorObj}};
+                        });
                         return false;
                     }else
-                        setFormState({});
+                        setFormState(({errors})=>{
+                            delete errors[name]
+                            return {errors};
+                        });
                     break;
                 case 'pattern':
                     if(!value.test(inputValue)){
-                        setFormState({error});
+                        console.log('hi');
+                        setFormState(({errors})=>{
+                            return {errors:{...errors,[name]:errorObj}};
+                        });
                         return false;
                     }else
-                        setFormState({});
+                        setFormState(({errors})=>{
+                            delete errors[name]
+                            return {errors};
+                        });
                     break;
                 default:
                     break;
@@ -68,13 +97,18 @@ export function useForm(option={mode:'onSubmit'}){
     const handleSubmit = (callback) => (event) => {
         event.preventDefault();
         const data = {};
+        let isError = false;
         for(const [name] of nameList){
             data[name] = document.querySelector(`input[name="${name}"]`).value;
             if(mode === "onSubmit"){
-                if(!validation(name)) return false;
+                if(!validation(name)) isError=true;
             }
         }
-        return callback(data);
+        console.log(formState);
+        if(mode !== "onSubmit")
+            isError = Object.keys(formState.errors).length===0 ? false : true;
+
+        return (isError) ? false : callback(data);
     }
     
     function register(name, registerOption={}){
@@ -87,11 +121,12 @@ export function useForm(option={mode:'onSubmit'}){
             if(required && (required!==false)){
                 if(inputValue.length===0){
                     setFormState({error:{name:{type:'required',message:required}}})
-                    return false;
+                    //return false;
                 }
             }
 
-            return validation(name);
+            const isValid = validation(name);
+
         }
         return {name,[mode]:onFunc};
     }

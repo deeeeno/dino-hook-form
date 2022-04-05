@@ -1,9 +1,14 @@
+import { useEffect } from 'react';
 import {useForm} from 'react-hook-form'
 function HookForm(){
     const { register, handleSubmit, formState} = useForm({mode:'onBlur'});
     const onSubmit = (data)=>{
         console.log(data);
     }
+    useEffect(()=>{
+        const {errors} = formState;
+        console.dir(errors);
+    },[formState]);
     return <>
         <form onSubmit={handleSubmit(onSubmit)}>
             A : <input id="a" {...register("a", {required:true, maxLength:5})}/><br></br>

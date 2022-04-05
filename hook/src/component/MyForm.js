@@ -1,10 +1,11 @@
 import {useForm} from '../hook/dino-hook-form'
+
 function MyForm(){
-    const {register,handleSubmit,formState} = useForm({mode:"onBlur"});
+    const {register,handleSubmit,formState} = useForm({mode:"onChange"});
     const onSubmit = (data)=>{
         console.log(data);
     }
-    console.log(formState);
+
     return <>
         <form onSubmit={handleSubmit(onSubmit)}>
             <div>
